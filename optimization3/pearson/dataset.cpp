@@ -14,7 +14,7 @@ Author: David Holmqvist <daae19@student.bth.se>
 
 namespace Dataset
 {
-    std::vector<Vector> read(std::string filename)
+    std::vector<Vector> read(const std::string& filename)
     {
         unsigned dimension{};
         std::vector<Vector> result{};
@@ -46,7 +46,7 @@ namespace Dataset
         return result;
     }
 
-    void write(std::vector<double> data, std::string filename)
+    void write(const std::vector<double>& data, const std::string& filename)
     {
         std::ofstream f{};
 
