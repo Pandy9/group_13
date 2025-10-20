@@ -35,7 +35,7 @@ Vector::Vector(unsigned size, double *data)
 Vector::Vector(const Vector &other)
     : Vector{other.size}
 {
-    for (auto i{0}; i < size; i++)
+    for (unsigned int i{0}; i < size; i++)
     {
         data[i] = other.data[i];
     }
@@ -65,7 +65,7 @@ double Vector::mean() const
 {
     double sum{0};
 
-    for (auto i{0}; i < size; i++)
+    for (unsigned int i{0}; i < size; i++)
     {
         sum += data[i];
     }
@@ -75,15 +75,15 @@ double Vector::mean() const
 
 double Vector::magnitude() const
 {
-    double dot_prod{dot(*this)};
+    auto dot_prod{dot(*this)};
     return std::sqrt(dot_prod);
 }
 
-Vector Vector::operator/(const double& div)
+Vector Vector::operator/(double div)
 {
     auto result{*this};
 
-    for (auto i{0}; i < size; i++)
+    for (unsigned int i{0}; i < size; i++)
     {
         result[i] /= div;
     }
@@ -91,11 +91,11 @@ Vector Vector::operator/(const double& div)
     return result;
 }
 
-Vector Vector::operator-(const double& sub)
+Vector Vector::operator-(double sub)
 {
-    Vector result{*this};
+    auto result{*this};
 
-    for (auto i{0}; i < size; i++)
+    for (unsigned int i{0}; i < size; i++)
     {
         result[i] -= sub;
     }
@@ -103,11 +103,11 @@ Vector Vector::operator-(const double& sub)
     return result;
 }
 
-double Vector::dot(const Vector& rhs) const
+double Vector::dot(Vector rhs) const
 {
     double result{0};
 
-    for (auto i{0}; i < size; i++)
+    for (unsigned int i{0}; i < size; i++)
     {
         result += data[i] * rhs[i];
     }
