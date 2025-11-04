@@ -2,6 +2,7 @@
 
 CXX=g++-13
 CXXFLAGS=-std=c++17 -g -Wunused -Wall -Wunused
+#CXXFLAGS=-std=c++17 -Ofast -march=native -flto -DNDEBUG -pipe -Wall -Wextra -fno-exceptions
 
 all: pearson verify
 

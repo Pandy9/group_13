@@ -60,7 +60,7 @@ namespace Dataset
 
         for (unsigned int i{0}; i < data.size(); i++)
         {
-            f << std::setprecision(std::numeric_limits<double>::digits10 + 1) << data[i] << std::endl;
+            f << std::setprecision(std::numeric_limits<double>::digits10 + 1) << data[i] << '\n';
         }
     }
 

@@ -14,13 +14,15 @@ namespace Analysis {
 std::vector<double> correlation_coefficients(std::vector<Vector>& datasets)
 {
     std::vector<double> result {};
-
-    for (unsigned int sample1 { 0 }; sample1 < datasets.size() - 1; sample1++) {
-        for (unsigned int sample2 { sample1 + 1 }; sample2 < datasets.size(); sample2++) {
+    int size = datasets.size();
+    int sample1;
+    int sample2;
+    for (sample1 = 0; sample1 < size - 1; sample1++) {
+        for (sample2 = sample1 + 1; sample2 < size; sample2++) {
             auto corr { pearson(datasets[sample1], datasets[sample2]) };
             result.push_back(corr);
         }
-    }
+    }    
 
     return result;
 }
@@ -39,6 +41,7 @@ double pearson(Vector& vec1, Vector& vec2)
         sum_x += vec1[i];
         sum_y += vec2[i];
     }
+
     double dn = static_cast<double>(n);
     double x_mean = sum_x / dn;
     double y_mean = sum_y / dn;
