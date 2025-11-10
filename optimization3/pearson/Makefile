@@ -1,8 +1,7 @@
 # Author: David Holmqvist <daae19@student.bth.se>
 
 CXX=g++-13
-CXXFLAGS=-std=c++17 -g -Wunused -Wall -Wunused
-#CXXFLAGS=-std=c++17 -Ofast -march=native -flto -DNDEBUG -pipe -Wall -Wextra -fno-exceptions
+CXXFLAGS=-std=c++17 -Ofast -march=native -flto -DNDEBUG -Wall -Wextra
 
 all: pearson verify
 

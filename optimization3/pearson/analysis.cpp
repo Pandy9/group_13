@@ -14,15 +14,15 @@ namespace Analysis {
 std::vector<double> correlation_coefficients(std::vector<Vector>& datasets)
 {
     std::vector<double> result {};
-    int size = datasets.size();
-    int sample1;
-    int sample2;
+    const std::size_t size = datasets.size();
+    std::size_t sample1;
+    std::size_t sample2;
     for (sample1 = 0; sample1 < size - 1; sample1++) {
         for (sample2 = sample1 + 1; sample2 < size; sample2++) {
             auto corr { pearson(datasets[sample1], datasets[sample2]) };
             result.push_back(corr);
         }
-    }    
+    }
 
     return result;
 }
