@@ -1,6 +1,5 @@
 /*
 Author: David Holmqvist <daae19@student.bth.se>
-Parallel Gaussian blur implementation using pthreads.
 */
 
 #include "filters.hpp"
@@ -14,13 +13,9 @@ namespace Filter
 {
     namespace Gauss
     {
-        // get_weights finns i filters.cpp
         extern void get_weights(int n, double *weights_out);
     }
 
-    // =====================
-    // Struktur för tråduppgifter
-    // =====================
     struct BlurTask
     {
         Matrix *src;
@@ -29,12 +24,10 @@ namespace Filter
         int radius;
         int start_y;
         int end_y;
-        bool horizontal; // true = horizontal pass, false = vertical pass
+        bool horizontal; 
     };
 
-    // =====================
-    // Funktion som varje tråd kör
-    // =====================
+    
     void *blur_section(void *arg)
     {
         BlurTask *t = static_cast<BlurTask *>(arg);
@@ -45,7 +38,6 @@ namespace Filter
 
         if (t->horizontal)
         {
-            // Horisontell suddning
             for (int y = t->start_y; y < t->end_y; ++y)
             {
                 for (unsigned x = 0; x < dst.get_x_size(); ++x)
@@ -83,7 +75,6 @@ namespace Filter
         }
         else
         {
-            // Vertikal suddning
             for (int y = t->start_y; y < t->end_y; ++y)
             {
                 for (unsigned x = 0; x < dst.get_x_size(); ++x)
@@ -123,9 +114,6 @@ namespace Filter
         return nullptr;
     }
 
-    // =====================
-    // Intern funktion (används av blur_parallel)
-    // =====================
     Matrix blur_parallel_internal(Matrix &m, const int radius, int n_threads)
     {
         Matrix scratch{m};
@@ -139,7 +127,6 @@ namespace Filter
 
         int rows_per_thread = dst.get_y_size() / n_threads;
 
-        // --- Första passet (horisontellt) ---
     for (int i = 0; i < n_threads; ++i)
     {
         int start_y = i * rows_per_thread;
@@ -161,7 +148,6 @@ namespace Filter
     for (int i = 0; i < n_threads; ++i)
         pthread_join(threads[i], nullptr);
 
-    // --- Andra passet (vertikalt) ---
     for (int i = 0; i < n_threads; ++i)
     {
         int start_y = i * rows_per_thread;
@@ -186,12 +172,9 @@ namespace Filter
         return dst;
     }
 
-    // =====================
-    // Extern funktion anropad från blur_par.cpp
-    // =====================
     Matrix blur_parallel(Matrix m, const int radius, int n_threads)
     {
         return blur_parallel_internal(m, radius, n_threads);
     }
 
-} // namespace Filter
+} 

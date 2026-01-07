@@ -1,6 +1,5 @@
 /*
 Author: David Holmqvist <daae19@student.bth.se>
-Parallel main program for Gaussian blur
 */
 
 #include "matrix.hpp"
