@@ -170,14 +170,12 @@ void Writer::operator()(Matrix m, std::string filename)
 
         auto size { m.get_x_size() * m.get_y_size() };
         auto R { m.get_R() }, G { m.get_G() }, B { m.get_B() };
-        auto it_R { R }, it_G { G }, it_B { B };
 
-        while (it_R < R + size && it_G < G + size && it_B < B + size) {
-            f << *it_R++
-              << *it_G++
-              << *it_B++;
+        for (size_t i = 0; i < size; ++i) { 
+            f.write(reinterpret_cast<const char*>(&R[i]), 1);
+            f.write(reinterpret_cast<const char*>(&G[i]), 1);
+            f.write(reinterpret_cast<const char*>(&B[i]), 1);
         }
-
         f.close();
     } catch (std::runtime_error e) {
         error("writing", e.what());

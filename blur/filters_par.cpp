@@ -20,161 +20,116 @@ namespace Filter
     {
         Matrix *src;
         Matrix *dst;
-        double *weights;
         int radius;
         int start_y;
         int end_y;
-        bool horizontal; 
+        bool horizontal;
     };
 
-    
     void *blur_section(void *arg)
     {
-        BlurTask *t = static_cast<BlurTask *>(arg);
+        auto *t = static_cast<BlurTask *>(arg);
         Matrix &src = *t->src;
         Matrix &dst = *t->dst;
-        double *w = t->weights;
-        int r = t->radius;
 
-        if (t->horizontal)
+        for (int y = t->start_y; y < t->end_y; ++y)
         {
-            for (int y = t->start_y; y < t->end_y; ++y)
+            for (unsigned x = 0; x < dst.get_x_size(); ++x)
             {
-                for (unsigned x = 0; x < dst.get_x_size(); ++x)
-                {
-                    double rr = w[0] * src.r(x, y);
-                    double gg = w[0] * src.g(x, y);
-                    double bb = w[0] * src.b(x, y);
-                    double n = w[0];
+                double w[Gauss::max_radius]{};
+                Gauss::get_weights(t->radius, w);
 
-                    for (int wi = 1; wi <= r; ++wi)
+                double r = w[0] * src.r(x, y);
+                double g = w[0] * src.g(x, y);
+                double b = w[0] * src.b(x, y);
+                double n = w[0];
+
+                for (int wi = 1; wi <= t->radius; ++wi)
+                {
+                    double wc = w[wi];
+
+                    if (t->horizontal)
                     {
-                        double wc = w[wi];
                         int x2 = static_cast<int>(x) - wi;
                         if (x2 >= 0)
                         {
-                            rr += wc * src.r(x2, y);
-                            gg += wc * src.g(x2, y);
-                            bb += wc * src.b(x2, y);
+                            r += wc * src.r(x2, y);
+                            g += wc * src.g(x2, y);
+                            b += wc * src.b(x2, y);
                             n += wc;
                         }
                         x2 = static_cast<int>(x) + wi;
                         if (x2 < static_cast<int>(src.get_x_size()))
                         {
-                            rr += wc * src.r(x2, y);
-                            gg += wc * src.g(x2, y);
-                            bb += wc * src.b(x2, y);
+                            r += wc * src.r(x2, y);
+                            g += wc * src.g(x2, y);
+                            b += wc * src.b(x2, y);
                             n += wc;
                         }
                     }
-                    dst.r(x, y) = rr / n;
-                    dst.g(x, y) = gg / n;
-                    dst.b(x, y) = bb / n;
-                }
-            }
-        }
-        else
-        {
-            for (int y = t->start_y; y < t->end_y; ++y)
-            {
-                for (unsigned x = 0; x < dst.get_x_size(); ++x)
-                {
-                    double rr = w[0] * src.r(x, y);
-                    double gg = w[0] * src.g(x, y);
-                    double bb = w[0] * src.b(x, y);
-                    double n = w[0];
-
-                    for (int wi = 1; wi <= r; ++wi)
+                    else
                     {
-                        double wc = w[wi];
                         int y2 = y - wi;
                         if (y2 >= 0)
                         {
-                            rr += wc * src.r(x, y2);
-                            gg += wc * src.g(x, y2);
-                            bb += wc * src.b(x, y2);
+                            r += wc * src.r(x, y2);
+                            g += wc * src.g(x, y2);
+                            b += wc * src.b(x, y2);
                             n += wc;
                         }
                         y2 = y + wi;
                         if (y2 < static_cast<int>(src.get_y_size()))
                         {
-                            rr += wc * src.r(x, y2);
-                            gg += wc * src.g(x, y2);
-                            bb += wc * src.b(x, y2);
+                            r += wc * src.r(x, y2);
+                            g += wc * src.g(x, y2);
+                            b += wc * src.b(x, y2);
                             n += wc;
                         }
                     }
-                    dst.r(x, y) = rr / n;
-                    dst.g(x, y) = gg / n;
-                    dst.b(x, y) = bb / n;
                 }
+
+                dst.r(x, y) = r / n;
+                dst.g(x, y) = g / n;
+                dst.b(x, y) = b / n;
             }
         }
-
         return nullptr;
-    }
-
-    Matrix blur_parallel_internal(Matrix &m, const int radius, int n_threads)
-    {
-        Matrix scratch{m};
-        Matrix dst{m};
-
-        double w[Gauss::max_radius]{};
-        Gauss::get_weights(radius, w);
-
-        std::vector<pthread_t> threads(n_threads);
-        std::vector<BlurTask> tasks(n_threads);
-
-        int rows_per_thread = dst.get_y_size() / n_threads;
-
-    for (int i = 0; i < n_threads; ++i)
-    {
-        int start_y = i * rows_per_thread;
-        int end_y = (i == n_threads - 1)
-              ? dst.get_y_size()
-              : (i + 1) * rows_per_thread;
-
-        tasks[i] = {
-            &dst,
-            &scratch,
-            w,
-            radius,
-            start_y,
-            end_y,
-            true
-        };
-        pthread_create(&threads[i], nullptr, blur_section, &tasks[i]);
-    }
-    for (int i = 0; i < n_threads; ++i)
-        pthread_join(threads[i], nullptr);
-
-    for (int i = 0; i < n_threads; ++i)
-    {
-        int start_y = i * rows_per_thread;
-        int end_y = (i == n_threads - 1)
-              ? dst.get_y_size()
-              : (i + 1) * rows_per_thread;
-
-        tasks[i] = {
-            &scratch,
-            &dst,
-            w,
-            radius,
-            start_y,
-            end_y,
-            false
-        };
-        pthread_create(&threads[i], nullptr, blur_section, &tasks[i]);
-    }
-    for (int i = 0; i < n_threads; ++i)
-        pthread_join(threads[i], nullptr);
-
-        return dst;
     }
 
     Matrix blur_parallel(Matrix m, const int radius, int n_threads)
     {
-        return blur_parallel_internal(m, radius, n_threads);
-    }
+        Matrix scratch{m};
+        Matrix dst{m};
 
-} 
+        int rows = dst.get_y_size();
+        int rows_per_thread = rows / n_threads;
+
+        std::vector<pthread_t> threads(n_threads);
+        std::vector<BlurTask> tasks(n_threads);
+
+        // Horizontal pass
+        for (int i = 0; i < n_threads; ++i)
+        {
+            int start_y = i * rows_per_thread;
+            int end_y = (i == n_threads - 1) ? rows : (i + 1) * rows_per_thread;
+
+            tasks[i] = {&dst, &scratch, radius, start_y, end_y, true};
+            pthread_create(&threads[i], nullptr, blur_section, &tasks[i]);
+        }
+        for (auto &t : threads)
+            pthread_join(t, nullptr);
+
+        // Vertical pass
+        for (int i = 0; i < n_threads; ++i)
+        {
+            tasks[i].src = &scratch;
+            tasks[i].dst = &dst;
+            tasks[i].horizontal = false;
+            pthread_create(&threads[i], nullptr, blur_section, &tasks[i]);
+        }
+        for (auto &t : threads)
+            pthread_join(t, nullptr);
+
+        return dst;
+    }
+}
