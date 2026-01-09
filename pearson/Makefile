@@ -3,7 +3,7 @@
 CXX=g++-13
 CXXFLAGS=-std=c++17 -g -Wunused -Wall -Wunused
 
-all: pearson verify
+all: pearson pearson_par verify
 
 pearson: vector dataset analysis pearson.cpp 
 	$(CXX) $(CXXFLAGS) pearson.cpp vector.o dataset.o analysis.o -o pearson
@@ -20,5 +20,14 @@ vector: vector.hpp vector.cpp
 verify: verify.c
 	$(CC) verify.c -o verify
 
+pearson_par: pearson_par.o analysis_par.o dataset.o vector.o
+	$(CXX) $(CXXFLAGS) pearson_par.o analysis_par.o dataset.o vector.o -o pearson_par
+
+pearson_par.o: pearson_par.cpp analysis_par.hpp dataset.hpp vector.hpp
+	$(CXX) $(CXXFLAGS) -c pearson_par.cpp
+
+analysis_par.o: analysis_par.cpp analysis_par.hpp vector.hpp
+	$(CXX) $(CXXFLAGS) -c analysis_par.cpp
+
 clean:
-	rm -rf verify pearson *.o *.dSYM 2> /dev/null
+	rm -rf pearson pearson_par verify *.o *.dSYM 2> /dev/null
