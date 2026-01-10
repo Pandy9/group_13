@@ -107,7 +107,6 @@ namespace Filter
         std::vector<pthread_t> threads(n_threads);
         std::vector<BlurTask> tasks(n_threads);
 
-        // Horizontal pass
         for (int i = 0; i < n_threads; ++i)
         {
             int start_y = i * rows_per_thread;
@@ -119,7 +118,6 @@ namespace Filter
         for (auto &t : threads)
             pthread_join(t, nullptr);
 
-        // Vertical pass
         for (int i = 0; i < n_threads; ++i)
         {
             tasks[i].src = &scratch;
